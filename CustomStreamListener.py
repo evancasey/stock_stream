@@ -23,8 +23,6 @@ import json
 import smtplib
 import traceback
 
-
-
 #Oauth verification for the Twitter Streaming API
 CONSUMER_KEY = 'bN7Daq0GmSNA8Tbd7RFMeA'
 CONSUMER_SECRET = 'T3QP1XIFYzaQpxzuyKgVjgn1HfYtS6Ftwr7cAlcf8G4'
@@ -41,8 +39,6 @@ Base = declarative_base(bind=db)
 Session = scoped_session(sessionmaker(db))
 db.echo = True
 
-#setting up our models
-
 #class to store individual tweet traits
 class Tweet(Base):
 	__tablename__ = 'tweet'
@@ -56,6 +52,10 @@ class Tweet(Base):
 	status_original_tweet_id = Column(Integer)
 	status_created_at = Column(String)
 	status_source = Column(String)
+	status_urls = Column(String)
+	status_hashtags = Column(String)
+	status_mentions = Column(String)
+	status_is_retweet = Column(Boolean)
 
 #class to store individual user traits
 class User(Base):
@@ -89,26 +89,30 @@ class CustomStreamListener(tweepy.StreamListener):
 						status_retweet_count = status.retweet_count,
 						status_original_tweet_id = status.retweeted_status.id if (status.retweet_count > 0) else 0,
 						status_created_at = status.created_at,
-						status_source = status.source
-						#status_urls = status.entities['urls'],
-						#status_hashtags = status.entities['hashtags'],
-						#status_mentions = status.entities['user_mentions']
+						status_source = status.source,
+						status_urls = json.dumps(status.entities['urls']),
+						status_hashtags = json.dumps(status.entities['hashtags']),
+						status_mentions = json.dumps(status.entities['user_mentions']),
+						status_is_retweet = True if status.text[:2] == "RT" else False
 						)
 
+		#instance variables to use when updating
+
+		u_store = Session.query(User).filter(User.id == status.author.id).first()
+		if not u_store:
+			u_store = User(id = status.author.id,
+						   user_name = status.author.screen_name,
+						   user_followers_count = status.user.followers_count,
+						   user_friends_count = status.user.friends_count,
+						   user_statuses_count = status.author.statuses_count,
+						   user_favourites_count = status.author.favourites_count,
+						   user_listed_count = status.author.listed_count,
+						   user_mention_count = 0, #fill in later
+						   user_retweet_count = 0 #fill in later
+						   )
+
 		Session.add(t_store)
-
-		u_store = User(id = status.author.id,
-					   user_name = status.author.screen_name,
-					   user_followers_count = status.user.followers_count,
-					   user_friends_count = status.user.friends_count,
-					   user_statuses_count = status.author.statuses_count,
-					   user_favourites_count = status.author.favourites_count,
-					   user_listed_count = status.author.listed_count,
-					   user_mention_count = 0, #fill in later
-					   user_retweet_count = 0 #fill in later
-					   )
-
-		#Session.add(u_store)
+		Session.add(u_store)
 		
 		try:
 		 	 print status.text.encode('utf-8') if status.text else ""
