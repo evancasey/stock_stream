@@ -157,4 +157,4 @@ if __name__ == '__main__':
 	#call our main streaming handler
 	listener=CustomStreamListener()
 	stream=tweepy.streaming.Stream(auth,listener)
-	stream.filter(track=queryUsers)
+	stream.filter(track=queryTerms)
