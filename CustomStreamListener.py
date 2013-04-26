@@ -121,14 +121,6 @@ class CustomStreamListener(tweepy.StreamListener):
 
 		 	 Session.commit()
 
-		 	 print "Printing out the rows"
-
-		 	 t = select([Tweet])
-			 t_result = t.execute()
-			 
-			 for row in t_result:
-			    print row
-
 		except Exception, e:
 			print >> sys.stderr, 'Encountered Exception: ', e
 			pass

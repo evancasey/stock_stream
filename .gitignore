@@ -1,0 +1,7 @@
+stream.db
+stream
+*.db
+
+bin 
+include
+lib
