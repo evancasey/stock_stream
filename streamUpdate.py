@@ -22,8 +22,8 @@ def loadSession():
 	session = Session()
 	return session
 
-def isRT(tweet):
-	if "RT @" in tweet:
+def isRT(tweet, mentions):
+	if "RT @" in tweet and isMentions(mentions):
 		return True
 	else:
 		return False
@@ -86,32 +86,25 @@ def updateMentionCount(mentions, isRT, Session):
 			i += 1	
 	print "-----------------------------------"
 
-def updateURLCount(urls,):
-
-
-def updateTickerCount(url,):
-
-
-
 if __name__ == '__main__':
 	Session = loadSession()
 	tweets = Session.query(Tweet).all()
 	users = Session.query(User).all()
-	
+
+
+	tweet_count_RT = 0
 	#update RT count
 	for tweet in tweets:
-		if isRT(tweet.status_text):
+		tweet_count_RT += 1
+		print tweet_count_RT
+		if isRT(tweet.status_text, tweet.status_mentions):
 			updateRTCount(tweet.status_mentions,Session)
 
+	tweet_count_M = 0
 	#update mention count
 	for tweet in tweets:
+		tweet_count_M += 1
+		print tweet_count_M
 		if isMentions(tweet.status_mentions):
-			is_rt = isRT(tweet.status_text)
+			is_rt = isRT(tweet.status_text, tweet.status_mentions)
 			updateMentionCount(tweet.status_mentions,is_rt,Session)
-
-	#update URL count
-	for tweet in tweets:
-		print twee
-
-	#update Ticker count
-	#
